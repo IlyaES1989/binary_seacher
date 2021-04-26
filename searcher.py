@@ -16,7 +16,7 @@ def binary_search(arr, x, left, right, len_x, len_row):
     if arr[left_bytes:left_bytes + len_x] == x:
         return left_bytes
     else:
-        raise ValueError('No value found for a keyword')
+        raise ValueError('No results have been found for this search.')
 
 
 def find_recommendation(path, sku, rank=None):
@@ -49,7 +49,7 @@ def find_recommendation(path, sku, rank=None):
                     value_dict[key] = [value, ]
                 start += len_row
     if rank:
-        value_list = value_dict[rank]
+        value_list = value_dict.get(rank)
     else:
         value_list = []
         for key in value_dict:
@@ -60,13 +60,13 @@ def find_recommendation(path, sku, rank=None):
 
 if __name__ == '__main__':
     test_data = ('0000qtZc3F', 'aTlK8A8gMm', '3nF6FijOVA', 'Q2RgLO85tR', '0000qtZc3F', 'zzzzJtUDad', 'T5116l54qW',
-                 'dtZUeXFEEc', 'NbOFDESwLU', 'CYFPUMDWff', 'Ia5f7aPUpM', 'TZDrb4lIlk', 'QUQRB6Mltt')
+                 'dtZUeXFEEc', 'NbOFDESwLU', 'CYFPUMDWff', 'Ia5f7aPUpM', 'TZDrb4lIlk',)
     tt = []
     for data in test_data:
         sku = data
         filename = 'sorted_recommends.csv'
         a = timeit.repeat('find_recommendation(filename, sku)',
-                          repeat=2000,
+                          repeat=1,
                           number=1,
                           setup='from __main__ import find_recommendation, filename, sku')
         tt += a
