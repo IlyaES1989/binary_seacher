@@ -4,7 +4,7 @@ from pathlib import Path
 from http.server import BaseHTTPRequestHandler
 from urllib import parse
 
-from searcher import find_recommendation
+from searcher import find_recommendation, file_loader
 
 
 class GetHandler(BaseHTTPRequestHandler):
@@ -12,6 +12,7 @@ class GetHandler(BaseHTTPRequestHandler):
     DB_NAME = 'sorted_recommends.csv'
 
     PATH_TO_SEARCH = os.path.join(BASE_DIR, DB_NAME)
+    file = file_loader(PATH_TO_SEARCH)
 
     def do_GET(self):
         parsed_path = parse.urlparse(self.path)
@@ -25,7 +26,7 @@ class GetHandler(BaseHTTPRequestHandler):
             sku = sku[0]
 
         try:
-            response = find_recommendation(self.PATH_TO_SEARCH, sku=sku, rank=rank)
+            response = find_recommendation(self.file, sku=sku, rank=rank)
         except ValueError:
             response = 'No results have been found for this search.'
         except TypeError:
@@ -53,6 +54,6 @@ class GetHandler(BaseHTTPRequestHandler):
 
 if __name__ == '__main__':
     from http.server import HTTPServer
-    server = HTTPServer(('localhost', 8080), GetHandler)
+    server = HTTPServer(('127.0.0.1', 8000), GetHandler)
     print('Starting server, use <Ctrl-C> to stop')
     server.serve_forever()

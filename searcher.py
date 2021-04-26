@@ -19,42 +19,46 @@ def binary_search(arr, x, left, right, len_x, len_row):
         raise ValueError('No results have been found for this search.')
 
 
-def find_recommendation(path, sku, rank=None):
-    with open(path, mode="r", encoding="utf-8") as file_obj:
-        sku = bytes(sku, 'utf-8')
-        if rank:
-            rank = str(rank)
-        value_dict = {}
+def file_loader(path):
+    file_obj = open(path, mode="r", encoding="utf-8")
+    mmap_file = mmap.mmap(file_obj.fileno(), length=0, access=mmap.ACCESS_READ)
+    return mmap_file
 
-        with mmap.mmap(file_obj.fileno(), length=0, access=mmap.ACCESS_READ) as file:
-            len_sku = file.find(b',')
-            len_row = file.find(b'\n') + 1
-            len_file = int(file.size() / len_row)
 
-            start = binary_search(file,
-                                  sku,
-                                  left=0,
-                                  right=len_file,
-                                  len_x=len_sku,
-                                  len_row=len_row)
+def find_recommendation(mmap_file, sku, rank=None):
+    sku = bytes(sku, 'utf-8')
+    if rank:
+        rank = str(rank)
 
-            while file[start: start+len_sku] == sku:
-                row = file[start: start+len_row-1].decode('utf-8').split(',')
-                value = row[1]
-                key = row[2]
+    len_sku = mmap_file.find(b',')
+    len_row = mmap_file.find(b'\n') + 1
+    len_file = int(mmap_file.size() / len_row)
 
-                if value_dict.get(key):
-                    value_dict[key] = value_dict.get(key) + [value, ]
-                else:
-                    value_dict[key] = [value, ]
-                start += len_row
+    start = binary_search(mmap_file,
+                          sku,
+                          left=0,
+                          right=len_file,
+                          len_x=len_sku,
+                          len_row=len_row)
+
+    value_dict = {}
+    while mmap_file[start: start + len_sku] == sku:
+        row = mmap_file[start: start + len_row - 1].decode('utf-8').split(',')
+        value = row[1]
+        key = row[2]
+
+        if value_dict.get(key):
+            value_dict[key] = value_dict.get(key) + [value, ]
+        else:
+            value_dict[key] = [value, ]
+        start += len_row
     if rank:
         value_list = value_dict.get(rank)
     else:
         value_list = []
         for key in value_dict:
             value_list += value_dict[key]
-
+    print(value_list)
     return value_list
 
 
@@ -65,10 +69,11 @@ if __name__ == '__main__':
     for data in test_data:
         sku = data
         filename = 'sorted_recommends.csv'
-        a = timeit.repeat('find_recommendation(filename, sku)',
+        file = file_loader(filename)
+        a = timeit.repeat('find_recommendation(file, sku)',
                           repeat=1,
                           number=1,
-                          setup='from __main__ import find_recommendation, filename, sku')
+                          setup='from __main__ import find_recommendation, file, sku')
         tt += a
     avr_time = sum(tt)/len(tt)
     min_time = min(tt)
