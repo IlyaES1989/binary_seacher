@@ -53,12 +53,10 @@ def find_recommendation(mmap_file, sku, rank=None):
             value_dict[key] = [value, ]
         start += len_row
     if rank:
-        value_list = value_dict.get(rank)
+        value_list = [val for key in value_dict for val in value_dict[key] if key >= rank]
     else:
-        value_list = []
-        for key in value_dict:
-            value_list += value_dict[key]
-    print(value_list)
+        value_list = [val for key in value_dict for val in value_dict[key]]
+
     return value_list
 
 
@@ -71,7 +69,7 @@ if __name__ == '__main__':
         filename = 'sorted_recommends.csv'
         file = file_loader(filename)
         a = timeit.repeat('find_recommendation(file, sku)',
-                          repeat=1,
+                          repeat=100,
                           number=1,
                           setup='from __main__ import find_recommendation, file, sku')
         tt += a

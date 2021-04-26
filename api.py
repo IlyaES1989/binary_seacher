@@ -57,3 +57,4 @@ if __name__ == '__main__':
     server = HTTPServer(('127.0.0.1', 8000), GetHandler)
     print('Starting server, use <Ctrl-C> to stop')
     server.serve_forever()
+
